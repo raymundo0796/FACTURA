@@ -63,71 +63,87 @@ class FacturacionApp:
     def __init__(self, root):
         self.root = root
         self.root.title("🧾 Sistema de Facturación Profesional")
-        self.root.geometry("1000x600")
-        self.root.configure(bg="#f5f6fa")
+        self.root.geometry("1100x650")
+        # Fondo principal: verde muy suave
+        self.root.configure(bg="#eafaf1")
 
         self.items_factura = []
 
         # Estilo
         style = ttk.Style()
         style.theme_use("clam")
-        style.configure("Treeview", font=("Arial", 11), rowheight=28)
-        style.configure("TButton", font=("Arial", 11), padding=6)
-        style.configure("TLabel", font=("Arial", 12), background="#f5f6fa")
+        style.configure("Treeview", font=("Segoe UI", 11), rowheight=32, borderwidth=0, relief="flat",
+                        background="#eafaf1", fieldbackground="#eafaf1")
+        style.configure("Treeview.Heading", font=("Segoe UI", 12, "bold"), background="#b2f7ef", foreground="#000", borderwidth=0)
+        style.configure("TButton", font=("Segoe UI", 11), padding=8, background="#4f8cff", foreground="#000", borderwidth=0)
+        style.map("TButton", background=[("active", "#43d19e")])
+        style.configure("TLabel", font=("Segoe UI", 12), background="#eafaf1", foreground="#000")
+        style.configure("TEntry", font=("Segoe UI", 11))
+        style.configure("TCombobox", font=("Segoe UI", 11))
+        style.configure("TSpinbox", font=("Segoe UI", 11))
+
+        # Título principal
+        titulo = tk.Label(self.root, text="🧾 Sistema de Facturación Profesional", font=("Segoe UI", 22, "bold"), bg="#eafaf1", fg="#000")
+        titulo.pack(pady=(18, 0))
+
+        # Frame principal
+        main_frame = tk.Frame(self.root, bg="#eafaf1")
+        main_frame.pack(fill="both", expand=True, padx=20, pady=10)
 
         # Frame izquierdo (cliente y productos)
-        frame_left = tk.Frame(self.root, bg="#f5f6fa", padx=15, pady=15)
-        frame_left.pack(side="left", fill="y")
+        frame_left = tk.Frame(main_frame, bg="#b2f7ef", padx=20, pady=20, bd=0, relief="flat", highlightbackground="#43d19e", highlightthickness=2)
+        frame_left.pack(side="left", fill="y", padx=(0, 18), pady=10)
 
-        ttk.Label(frame_left, text="👤 Cliente", font=("Arial", 14, "bold")).pack(pady=10)
+        ttk.Label(frame_left, text="👤 Cliente", font=("Segoe UI", 15, "bold"), background="#b2f7ef", foreground="#000").pack(pady=(0, 12))
 
-        ttk.Label(frame_left, text="Nombre:").pack()
-        self.entry_cliente = ttk.Entry(frame_left, width=30)
-        self.entry_cliente.pack(pady=5)
+        ttk.Label(frame_left, text="Nombre:", background="#b2f7ef", foreground="#000").pack(anchor="w")
+        self.entry_cliente = ttk.Entry(frame_left, width=28)
+        self.entry_cliente.pack(pady=4)
 
-        ttk.Label(frame_left, text="DNI:").pack()
-        self.entry_dni = ttk.Entry(frame_left, width=30)
-        self.entry_dni.pack(pady=5)
+        ttk.Label(frame_left, text="DNI:", background="#b2f7ef", foreground="#000").pack(anchor="w")
+        self.entry_dni = ttk.Entry(frame_left, width=28)
+        self.entry_dni.pack(pady=4)
 
-        ttk.Button(frame_left, text="➕ Registrar Cliente", command=self.registrar_cliente).pack(pady=10)
+        ttk.Button(frame_left, text="➕ Registrar Cliente", command=self.registrar_cliente).pack(pady=12, fill="x")
 
-        # Productos
-        ttk.Label(frame_left, text="📦 Productos Disponibles", font=("Arial", 14, "bold")).pack(pady=10)
+        ttk.Separator(frame_left, orient="horizontal").pack(fill="x", pady=12)
 
-        self.lista_productos = ttk.Combobox(frame_left, state="readonly", width=35, font=("Arial", 11))
-        self.lista_productos.pack(pady=5)
+        ttk.Label(frame_left, text="📦 Productos Disponibles", font=("Segoe UI", 15, "bold"), background="#b2f7ef", foreground="#000").pack(pady=(0, 12))
+
+        self.lista_productos = ttk.Combobox(frame_left, state="readonly", width=30, font=("Segoe UI", 11))
+        self.lista_productos.pack(pady=4)
 
         self.actualizar_productos()
 
-        ttk.Label(frame_left, text="Cantidad:").pack(pady=5)
-        self.cantidad_spin = tk.Spinbox(frame_left, from_=1, to=100, font=("Arial", 11), width=5)
-        self.cantidad_spin.pack(pady=5)
+        ttk.Label(frame_left, text="Cantidad:", background="#b2f7ef", foreground="#000").pack(anchor="w", pady=(8, 0))
+        self.cantidad_spin = tk.Spinbox(frame_left, from_=1, to=100, font=("Segoe UI", 11), width=6, relief="flat", bd=1)
+        self.cantidad_spin.pack(pady=4)
 
-        ttk.Button(frame_left, text="➕ Agregar a Factura", command=self.agregar_a_factura).pack(pady=10)
+        ttk.Button(frame_left, text="➕ Agregar a Factura", command=self.agregar_a_factura).pack(pady=12, fill="x")
 
         # Frame derecho (factura)
-        frame_right = tk.Frame(self.root, bg="#f5f6fa", padx=15, pady=15)
-        frame_right.pack(side="right", fill="both", expand=True)
+        frame_right = tk.Frame(main_frame, bg="#ffffff", padx=20, pady=20, bd=0, relief="flat", highlightbackground="#43d19e", highlightthickness=2)
+        frame_right.pack(side="right", fill="both", expand=True, pady=10)
 
-        ttk.Label(frame_right, text="🧾 Factura", font=("Arial", 14, "bold")).pack(pady=10)
+        ttk.Label(frame_right, text="🧾 Factura", font=("Segoe UI", 15, "bold"), background="#ffffff", foreground="#000").pack(pady=(0, 12))
 
         self.tabla_factura = ttk.Treeview(frame_right, columns=("Producto", "Precio", "Cantidad", "Subtotal"), show="headings", height=15)
-        self.tabla_factura.pack(fill="both", expand=True)
+        self.tabla_factura.pack(fill="both", expand=True, pady=8)
 
         self.tabla_factura.heading("Producto", text="Producto")
         self.tabla_factura.heading("Precio", text="Precio")
         self.tabla_factura.heading("Cantidad", text="Cantidad")
         self.tabla_factura.heading("Subtotal", text="Subtotal")
 
-        self.label_total = ttk.Label(frame_right, text="💲 Total: $0.00", font=("Arial", 13, "bold"))
-        self.label_total.pack(pady=10)
+        self.label_total = ttk.Label(frame_right, text="💲 Total: $0.00", font=("Segoe UI", 14, "bold"), background="#ffffff", foreground="#000")
+        self.label_total.pack(pady=10, anchor="e")
 
         # Botones
-        btn_frame = tk.Frame(frame_right, bg="#f5f6fa")
-        btn_frame.pack(pady=5)
+        btn_frame = tk.Frame(frame_right, bg="#ffffff")
+        btn_frame.pack(pady=5, anchor="e")
 
-        ttk.Button(btn_frame, text="❌ Eliminar", command=self.eliminar_item).grid(row=0, column=0, padx=5)
-        ttk.Button(btn_frame, text="💾 Guardar Factura", command=self.guardar_factura).grid(row=0, column=1, padx=5)
+        ttk.Button(btn_frame, text="❌ Eliminar", command=self.eliminar_item).grid(row=0, column=0, padx=6)
+        ttk.Button(btn_frame, text="💾 Guardar Factura", command=self.guardar_factura).grid(row=0, column=1, padx=6)
 
     # ==========================
     # FUNCIONES
