@@ -18,7 +18,7 @@ def inicializar_db():
         precio REAL NOT NULL
     )
     """)
-
+# Tabla Clientes
     # Tabla clientes
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS clientes (
@@ -248,7 +248,7 @@ class FacturacionApp:
 
 
 # ==========================
-# MAIN
+# MENU
 # ==========================
 if __name__ == "__main__":
     inicializar_db()
