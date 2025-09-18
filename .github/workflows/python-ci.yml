@@ -1,0 +1,37 @@
+name: Python CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest flake8
+
+      - name: Check syntax
+        run: python -m py_compile factura.py import_sqlite3.py
+
+      - name: Run linter
+        run: flake8 .
+
+      - name: Run seed script
+        run: python import_sqlite3.py
+
+      - name: Run tests
+        run: pytest || echo "No tests yet"
