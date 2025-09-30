@@ -8,6 +8,7 @@ from app.models.producto import Producto
 from app.repositories.factura_repository import FacturaRepository
 from app.repositories.producto_repository import ProductoRepository
 from app.repositories.cliente_repository import ClienteRepository
+from app.schemas.factura import FacturaUpdate
 
 
 class FacturaService:
@@ -102,34 +103,33 @@ class FacturaService:
         return factura
 
     def update_factura(self, factura_id: int, factura_data: Dict[str, Any]) -> Optional[Factura]:
-        factura = self.factura_repo.get(factura_id)
+        # Obtener la factura existente
+        factura = self.factura_repo.get_factura(factura_id)
         if not factura:
             return None
             
-        # Actualizar campos básicos
-        if 'estado' in factura_data:
-            factura.estado = factura_data['estado']
-            
-        # Actualizar total si es necesario
-        if 'total' in factura_data:
-            factura.total = factura_data['total']
-            
-        self.db.commit()
-        self.db.refresh(factura)
-        return factura
+        # Preparar datos para actualizar
+        update_data = {
+            'estado': factura_data.get('estado', factura.estado),
+            'subtotal': factura_data.get('subtotal', factura.subtotal),
+            'impuesto': factura_data.get('impuesto', factura.impuesto),
+            'total': factura_data.get('total', factura.total)
+        }
+        
+        # Actualizar la factura
+        factura_actualizada = self.factura_repo.update_factura(factura_id, FacturaUpdate(**update_data))
+        return factura_actualizada
 
     def delete_factura(self, factura_id: int) -> bool:
-        factura = self.factura_repo.get(factura_id)
+        factura = self.factura_repo.get_factura(factura_id)
         if not factura:
             return False
             
         # Revertir stock de productos
         for detalle in factura.detalles:
-            producto = self.producto_repo.get(detalle.producto_id)
+            producto = self.producto_repo.get_by_id(detalle.producto_id)
             if producto:
                 producto.stock += detalle.cantidad
                 
         # Eliminar factura
-        self.db.delete(factura)
-        self.db.commit()
-        return True
+        return self.factura_repo.delete_factura(factura_id)

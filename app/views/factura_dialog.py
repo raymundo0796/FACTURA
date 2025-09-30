@@ -172,11 +172,23 @@ class FacturaDialog(QDialog):
         self.detalles_table = QTableWidget()
         self.detalles_table.setColumnCount(5)
         self.detalles_table.setHorizontalHeaderLabels(["Producto", "Cantidad", "Precio Unit.", "Subtotal", ""])
-        self.detalles_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        self.detalles_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-        self.detalles_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-        self.detalles_table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
-        self.detalles_table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
+        
+        # Configurar el ancho de las columnas
+        header = self.detalles_table.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)  # Producto se expande
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)  # Cantidad
+        header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)  # Precio Unit.
+        header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)  # Subtotal
+        header.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)  # Columna de botón
+        
+        # Configurar el alto de las filas
+        self.detalles_table.verticalHeader().setDefaultSectionSize(35)  # Aumentar el alto de las filas
+        self.detalles_table.verticalHeader().setVisible(False)  # Ocultar los números de fila
+        
+        # Mejorar la apariencia de la tabla
+        self.detalles_table.setAlternatingRowColors(True)  # Filas alternas de colores
+        self.detalles_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self.detalles_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         
         layout.addLayout(form_layout)
         layout.addWidget(self.detalles_table)
