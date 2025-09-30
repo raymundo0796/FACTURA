@@ -9,5 +9,4 @@ class BaseView(ttk.Frame):
         self.setup_ui()
 
     def setup_ui(self):
-        """Método para configurar la interfaz de usuario"""
         pass
