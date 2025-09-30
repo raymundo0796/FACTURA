@@ -9,16 +9,38 @@ class FacturaRepository:
         self.db = db
 
     def get_factura(self, factura_id: int) -> Optional[Factura]:
-        """Obtener una factura por su ID"""
-        return self.db.query(Factura).filter(Factura.id == factura_id).first()
+        """Obtener una factura por su ID con sus relaciones cargadas"""
+        from sqlalchemy.orm import joinedload
+        return (self.db.query(Factura)
+                .options(
+            joinedload(Factura.detalles),
+            joinedload(Factura.cliente)
+        )
+                .filter(Factura.id == factura_id)
+                .first())
 
     def get_factura_by_numero(self, numero_factura: str) -> Optional[Factura]:
-        """Obtener una factura por su número de factura"""
-        return self.db.query(Factura).filter(Factura.numero_factura == numero_factura).first()
+        """Obtener una factura por su número de factura con relaciones cargadas"""
+        from sqlalchemy.orm import joinedload
+        return (self.db.query(Factura)
+                .options(
+            joinedload(Factura.detalles),
+            joinedload(Factura.cliente)
+        )
+                .filter(Factura.numero_factura == numero_factura)
+                .first())
 
     def get_facturas(self, skip: int = 0, limit: int = 100) -> List[Factura]:
-        """Obtener lista de facturas con paginación"""
-        return self.db.query(Factura).offset(skip).limit(limit).all()
+        """Obtener lista de facturas con paginación y relaciones cargadas"""
+        from sqlalchemy.orm import joinedload
+        return (self.db.query(Factura)
+                .options(
+            joinedload(Factura.detalles),
+            joinedload(Factura.cliente)
+        )
+                .offset(skip)
+                .limit(limit)
+                .all())
 
     def get_facturas_by_cliente(self, cliente_id: int) -> List[Factura]:
         """Obtener facturas por ID de cliente"""
@@ -55,3 +77,30 @@ class FacturaRepository:
     def get_total_facturas(self) -> int:
         """Obtener el número total de facturas"""
         return self.db.query(Factura).count()
+
+    def buscar(self, termino: str) -> List[Factura]:
+        """
+        Buscar facturas por número de factura o nombre del cliente.
+        
+        Args:
+            termino: Término de búsqueda (número de factura o nombre del cliente)
+            
+        Returns:
+            Lista de facturas que coinciden con el término de búsqueda
+        """
+        from sqlalchemy import or_
+        from app.models.cliente import Cliente
+        
+        # Buscar por número de factura (si el término es numérico)
+        if termino.isdigit():
+            return self.db.query(Factura).filter(
+                Factura.numero_factura.like(f"%{termino}%")
+            ).all()
+            
+        # Buscar por nombre o apellido del cliente
+        return self.db.query(Factura).join(Cliente).filter(
+            or_(
+                Cliente.nombre.ilike(f"%{termino}%"),
+                Cliente.apellido.ilike(f"%{termino}%")
+            )
+        ).all()

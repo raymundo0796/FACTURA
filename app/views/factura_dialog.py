@@ -18,7 +18,8 @@ class FacturaDialog(QDialog):
         self.factura = factura
         self.clientes = []
         self.productos = []
-        self.detalles = []
+        # Initialize detalles with existing factura's detalles if editing, otherwise empty list
+        self.detalles = [detalle for detalle in factura.detalles] if factura and hasattr(factura, 'detalles') else []
         self.setWindowTitle("Nueva Factura" if not factura else "Editar Factura")
         self.setup_ui()
         
@@ -351,9 +352,14 @@ class FacturaDialog(QDialog):
             return
             
         self.accept()
-        
+
     def get_data(self):
         """Obtener los datos del formulario"""
+        # Calcular subtotal, impuesto y total
+        subtotal = sum(detalle.cantidad * detalle.precio_unitario for detalle in self.detalles)
+        impuesto = subtotal * (self.impuesto_input.value() / 100)
+        total = subtotal + impuesto
+
         # Convertir los detalles a diccionarios
         detalles_dict = [
             {
@@ -363,11 +369,13 @@ class FacturaDialog(QDialog):
             }
             for detalle in self.detalles
         ]
-        
+
         return {
             'cliente_id': self.cliente_combo.currentData(),
             'fecha_emision': self.fecha_input.dateTime().toPyDateTime(),
             'estado': self.estado_combo.currentText(),
             'impuesto': float(self.impuesto_input.value()),
+            'subtotal': float(subtotal),
+            'total': float(total),
             'detalles': detalles_dict
         }

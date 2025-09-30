@@ -103,12 +103,12 @@ class FacturaService:
         return factura
 
     def update_factura(self, factura_id: int, factura_data: Dict[str, Any]) -> Optional[Factura]:
-        # Obtener la factura existente
+        # Get the existing factura
         factura = self.factura_repo.get_factura(factura_id)
         if not factura:
             return None
             
-        # Preparar datos para actualizar
+        # Update basic fields
         update_data = {
             'estado': factura_data.get('estado', factura.estado),
             'subtotal': factura_data.get('subtotal', factura.subtotal),
@@ -116,8 +116,45 @@ class FacturaService:
             'total': factura_data.get('total', factura.total)
         }
         
-        # Actualizar la factura
+        # Update the factura
         factura_actualizada = self.factura_repo.update_factura(factura_id, FacturaUpdate(**update_data))
+        
+        # Update detalles if provided
+        if 'detalles' in factura_data and factura_data['detalles']:
+            # First, delete existing detalles
+            for detalle in factura.detalles:
+                # Revert stock for each deleted detalle
+                producto = self.producto_repo.get_by_id(detalle.producto_id)
+                if producto:
+                    producto.stock += detalle.cantidad
+            
+            # Clear existing detalles
+            self.db.query(DetalleFactura).filter(DetalleFactura.factura_id == factura_id).delete()
+            
+            # Add new detalles
+            for detalle_data in factura_data['detalles']:
+                producto = self.producto_repo.get_by_id(detalle_data['producto_id'])
+                if not producto:
+                    continue
+                    
+                # Update stock
+                if producto.stock < detalle_data['cantidad']:
+                    raise ValueError(f"Stock insuficiente para el producto {producto.nombre}")
+                producto.stock -= detalle_data['cantidad']
+                
+                # Create new detalle
+                detalle = DetalleFactura(
+                    factura_id=factura_id,
+                    producto_id=detalle_data['producto_id'],
+                    cantidad=detalle_data['cantidad'],
+                    precio_unitario=detalle_data['precio_unitario'],
+                    subtotal=detalle_data['cantidad'] * detalle_data['precio_unitario']
+                )
+                self.db.add(detalle)
+            
+            self.db.commit()
+            self.db.refresh(factura_actualizada)
+        
         return factura_actualizada
 
     def delete_factura(self, factura_id: int) -> bool:

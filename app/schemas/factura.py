@@ -37,7 +37,10 @@ class FacturaCreate(FacturaBase):
 
 class FacturaUpdate(BaseModel):
     estado: Optional[str] = None
+    subtotal: Optional[float] = None
     impuesto: Optional[float] = None
+    total: Optional[float] = None
+    detalles: Optional[List[DetalleFacturaCreate]] = None
 
 
 class Factura(FacturaBase):

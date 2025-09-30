@@ -29,8 +29,11 @@ class BaseRepository:
         self.db.refresh(db_obj)
         return db_obj
 
-    def delete(self, id: int) -> None:
+    def delete(self, id: int) -> bool:
+        """Elimina un registro por su ID. Devuelve True si se eliminó correctamente, False en caso contrario."""
         obj = self.get_by_id(id)
         if obj:
             self.db.delete(obj)
             self.db.commit()
+            return True
+        return False

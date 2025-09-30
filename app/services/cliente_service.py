@@ -44,12 +44,12 @@ class ClienteService:
         return self.repository.update(cliente, cliente_data)
 
     def delete_cliente(self, cliente_id: int) -> bool:
-        """Eliminar un cliente"""
+        """Eliminar un cliente por su ID"""
         cliente = self.get_cliente(cliente_id)
         if not cliente:
             raise ValueError("Cliente no encontrado")
             
-        return self.repository.delete(cliente)
+        return self.repository.delete(cliente_id)
         
     def buscar_clientes(self, texto: str) -> list[Cliente]:
         """Buscar clientes por nombre, apellido o DNI"""
